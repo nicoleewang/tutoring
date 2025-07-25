@@ -37,7 +37,7 @@ try:
         school = matches[0][0]
         cur.execute(num_subjects_query, (school,))
         num_subjects = cur.fetchone()
-        print(f'{school} teaches {num_subjects} subjects')
+        print(f'{school} teaches {num_subjects[0]} subjects')
 
     cur.close()
 except psycopg2.Error as err:
