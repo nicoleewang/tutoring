@@ -1,0 +1,59 @@
+#!/usr/bin/python3
+import sys
+import psycopg2
+
+db = 'uni'
+conn = None
+
+# process command line args
+if len(sys.argv) != 3:
+    print('Usage: ./courses-studied studentID term')
+    sys.exit(1)
+
+student_id = sys.argv[1]
+term = sys.argv[2]
+
+# queries
+student_check = 'select * from students where id = %s'
+
+# course_enrolements -> courses -> subjects
+#  courses -> terms
+students_subjects = '''
+    select s.code, s.name from course_enrolments as ce
+    join courses as c on ce.course = c.id
+    join subjects as s on c.subject = s.id
+    join terms as t on t.id = c.term
+    where ce.student = %s and t.code = %s
+    order by s.code asc
+'''
+
+
+try:
+    conn = psycopg2.connect(f"dbname={db}")
+    cur = conn.cursor()
+    
+    # check student exitss
+    cur.execute(student_check, (student_id,))
+    if not cur.fetchone():
+        print('no such student')
+        sys.exit(1)
+    
+    # find subjects associated with student and the term
+    cur.execute(students_subjects, (student_id, term))
+    courses = cur.fetchall()
+
+    if not courses:
+        print('No courses found')
+        sys.exit(1)
+    
+    # pritn all courses
+    for course in courses:
+        print(course[0], course[1])
+
+
+    cur.close()
+except psycopg2.Error as err:
+    print("database error: ", err)
+finally:
+    if conn is not None:
+        conn.close()

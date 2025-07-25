@@ -201,16 +201,3 @@ create aggregate mean(numeric) (
     initcond    = '(0,0)',
     finalfunc   = divide
 );
-
-/*
-stub:
-
-create or replace function name() returns return_type
-as $$
-declare
-begin
-
-end;
-$$ language plpgsql;
-
-*/
