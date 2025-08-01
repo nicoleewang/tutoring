@@ -1,0 +1,196 @@
+*** identifying FDs ***
+
+-- Q1 --
+a.
+
+b.
+    AB -> C does not hold
+    B -> C doesn't hold
+    C -> B doesn't hold
+    A -> C doesn't hold
+    B -> A doesn't hold
+    C -> A doesn't hold
+
+c.
+    one to one relationship between A and B
+
+*** Candidate keys and closures ***
+-- Q2 -- 
+a. 
+    initialise: {A}
+    applying A -> B: {A, B}
+
+    closure of A is {A, B}
+
+b.
+    initalise: {A, C, E, G}
+
+    appying A -> B: {A, B, C, E, G}
+
+    applying BC -> F: {A, B, C, E, F, G}
+
+    closure of ACEG = {A, B, C, E, F, G}
+
+c.
+    initialise: {B, D}
+
+    apply BD -> EG: {B, D, E, G}
+
+    applying D -> F: {B, D, E, F, G}
+
+    applying BEG -> FA: {A, B, D, E, F, G}
+
+    applying AD -> C: {A, B, C, D, E, F, G}
+
+    closure of BD is {A, B, C, D, E, F, G}
+
+
+*** Identifying BCNF and 3NF ***
+-- Q3 -- 
+a. 
+    candidate key must contain CD
+
+    try ACD: closure is the full set of attributes so candidate key
+    try BCD: also a candidate key 
+    try ECD: also a candidate key
+
+b.
+    1. Identify all candidate keys of the relation.
+        done this 
+    2. For each functional dependency X -> Y:
+        - Verify if X is a superkey.
+        - If X is not a superkey, check if each attribute in Y is a prime attribute.
+        - If any functional dependency violates both conditions, the relation is not in 3NF
+    
+    A -> B:     A is not a superkey, B is a prime attribute
+    BC-> E:     BC is not a superkey, E is a prime attribute
+    ED -> A:    '                                           '
+
+    so R is in 3NF
+
+c.
+    A -> B:     A is not a superkey
+
+    so R is not in BCNF
+
+
+
+-- Q4 -- 
+iii. ABC → D,   D → A
+    a.
+        candidate key will have BC
+        
+        candidate key is 
+            - ABC
+            - DBC
+
+    b.
+        ABC -> D    ABC is a super key so we're good
+        D -> A      D is not a superkey so booo
+
+        so R is not in BCNF
+
+    c. 
+        ABC -> D    ABC is a super key so we're good
+        D -> A      A is a prime attribute so we're good
+
+        so R is 3NF
+
+
+*** Minimal Cover *** 
+-- Q13 --
+1. Convert fds into canonical form (e.g., A → BC becomes A → B and A → C)
+    given - don't need to do anything
+
+2. Reduce multi-attribute determinants (reduce LHS)
+    AB → D
+
+    if i gave u just B can I derive D? yes
+    if i gave u just A can I derive D? no 
+
+    A is redundant since it doesn't contribute to deriving D!!
+
+    can reduce to: AB -> D => B -> D
+
+3. Remove redundant fds
+    B -> D
+    B -> A 
+    D -> A 
+
+    but D → A, B → D   =>   B → A
+
+    so minimal cover is B → D, D → A
+
+
+*** 3NF decompositon ***
+-- Q17 --
+1. Compute minimal cover
+    given minimal cover so dw abt it
+
+2. For all fds A → B in minimal cover, create new relation/table with attributes AB
+    BHC
+    AD
+    CE 
+    FA 
+    EF  
+    BHE
+
+    BH is a key in BHC and BHE so we can combine to BHCE:
+        so full set of relations is:
+            BHCE
+            AD
+            CE 
+            FA 
+            EF  
+
+
+3. If none of the newly created relations contain a candidate key, create a new relation with attributes of any candidate key
+    figure out candidate keys:
+        - start off with BGH
+        - candidate key is BGH
+    
+    BHCE
+    AD
+    CE 
+    FA 
+    EF  
+    BGH
+
+    this is your fully decomposed 3NF relations!!
+
+
+*** BCNF decompositon ***
+-- Q15 --
+while exists a relation Ri not in BCNF:
+    find FD X → Y in Ri that violates BCNF
+    decompose Ri into:
+        R1 = X ∪ Y
+        R2 = Ri - (Y - X)
+
+start off with R(ABCDEFGH)
+    - fds: ABH → C,  A → DE,  BGH → F,  F → ADH,  BH → GE
+    - ABH is a super key because the closure is the set of attributes in R 
+    - A -> DE: A is not a super key!!! 
+        decompose:
+            - R1(ADE)
+                - fds: A -> DE
+                - this is in BCNF
+            - R2(ABCFGH)
+                - fds: ABH → C, BGH → F,  F → AH,  BH → G
+work from R2(ABCFGH)
+    - fds: ABH → C, BGH → F,  F → AH,  BH → G
+    - ABH is still a super key
+    - BGH is also a super key
+    - F -> AH: F is not a superkey!!!!
+        decompose:
+            - R3(FAH)
+                - fds: F -> AH
+                - this is in BCNF
+            - R4(BCFG)
+                - fds: BH → C, BG → F, B → G
+
+work from R4(BCFG)
+    - fds: BH → C, BG → F, B → G
+    - R4 is also in BCNF 
+
+decomposed R in BCNF is: R1(ADE), R3(FAH), R4(BCFG)
