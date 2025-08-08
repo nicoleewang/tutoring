@@ -1,0 +1,145 @@
+*** relational algebra ***
+Q4.
+A       B       C
+a1	    b1	    c1
+a1	    b2	    c2
+a2	    b1	    c1
+
+S
+B	  C
+b1	c1
+b2	c2
+
+a. 
+R Div S
+
+A 
+__
+a1
+
+b. 
+Sel[B != b1](S):
+B   C 
+b2  c2
+
+R div Sel[B != b1](S):
+A 
+a1
+
+
+
+c.
+R Div (Sel[B != b2](S)):
+
+A 
+a1 
+a2
+
+
+d.
+tmp1 = R Join[B=B] S
+
+tmp1
+
+R.A     R.B     R.C     S.B     S.C
+a1	    b1	    c1      b1	    c1
+a1	    b2	    c2      b2	    c2
+a2	    b1	    c1      b1	    c1
+
+tmp2 = Sel[R.C=S.C](tmp1)
+
+tmp2 
+R.A     R.B     R.C     S.B     S.C
+a1	    b1	    c1      b1	    c1
+a1	    b2	    c2      b2	    c2
+a2	    b1	    c1      b1	    c1
+
+tmp3 = R × S
+
+tmp3
+R.A     R.B     R.C     S.B     S.C
+a1      b1      c1      b1      c1
+a1	    b1	    c1      b2	    c2
+a1	    b2	    c2      b1	    c1
+a1	    b2	    c2      b2	    c2
+a2	    b1	    c1      b1	    c1
+a2	    b1	    c1      b2	    c2
+
+result = tmp3 - tmp2
+
+R.A     R.B     R.C     S.B     S.C
+a1	    b1	    c1      b2	    c2
+a1	    b2	    c2      b1	    c1
+a2	    b1	    c1      b2	    c2
+
+Q7.
+a.
+tmp1 = Suppliers join[Suppliers.sid = Catalog.supplier] Catalog
+tmp2 = Parts join[Parts.pid = tmp1.part] tmp1
+tmp3 = Sel[colour = 'red'](tmp2)
+tmp4 = Proj[sname](tmp3)
+
+b.
+tmp1 = Suppliers join[Suppliers.sid = Catalog.supplier] Catalog
+tmp2 = Parts join[Parts.pid = tmp1.part] tmp1
+tmp3 = Sel[colour = 'red' or colour = 'green'](tmp2)
+tmp4 = Proj[sid](tmp3)
+
+
+*** transaction processing ***
+Q11.
+It has an edge from T3 to T1 (because of A) and an edge from T2 to T3 because of B.
+
+This gives: T2 --> T3 --> T1
+No cycles in precedence graph, schedule is conflict serializable
+
+
+Q12.
+a.
+
+T1 -> T3 (T1 R(Y) before T3 W(Y))
+T2 -> T3 (T2 R(Y) before T3 W(Y))
+T3 -> T2 (T3 W(Y) before T2 R(Y))
+
+T2 <-> T3 is a cycle: our schedule is not conflict serializable
+
+b.
+Trick question. It is not possible. Since the precedence graph is cyclic, we know that it's not conflict-serializable.
+
+
+Q13.
+b.
+T1 W(X)      R(Y)
+T2      R(Y)      R(X)
+
+Determine if its conflict serializable and/or view serializable
+
+First determine if it's conflict serializable
+Precedence graph
+T1 -> T2
+No cycles
+Hence, conflict serializable and also view serializable
+
+e.
+T1 R(X)      W(X)
+T2      W(X)
+T3                W(X)
+
+Determine if its conflict serializable and/or view serializable
+First determine if it's conflict serializable
+Precedence graph
+T1 -> T2 (T1 R(X) before T2 W(X))
+T2 -> T1 (T2 W(X) before T1 W(X))
+A cycle! Hence its not conflict serializable
+
+Now check view serializability
+Compare to serial schedule T1 -> T2 -> T3
+T1 R(X) W(X)
+T2           W(X)
+T3                W(X)
+
+In the given schedule and the serial schedule, T1 reads to X first
+In the given schedule and the serial schedule, T3 writes to X last
+Hence, schedule is view serializable
+
+d. 
