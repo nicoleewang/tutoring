@@ -1,0 +1,106 @@
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+create table public.Suppliers (
+      sid     integer primary key,
+      sname   text,
+      address text
+);
+
+create table public.Parts (
+      pid     integer primary key,
+      pname   text,
+      colour  text
+);
+
+create table public.Catalog (
+      supplier      integer references public.Suppliers(sid),
+      part          integer references public.Parts(pid),
+      cost          real,
+      primary key (supplier,part)
+);
+
+insert into public.Suppliers values
+(1,   'Everything Warehouse', '123 Everything Rd'),
+(2,   'Nothing Warehouse',    '987 Nothing Ln'),
+(3,   'Red Factory',          '468 Red Ave'),
+(4,   'Green Machine',        '973 Blue St'),
+(5,   'Yosemite Sham',        '555 Sham Blvd'),
+(6,   'Packer Parts',         '221 Packer Street'),
+(7,   'Universal Supply Co',  '1 Supply Way'),
+(8,   'Colour Specialist',    '42 Rainbow Rd'),
+(9,   'Yosemite Sham',        '999 Sham Ave'),
+(10,  'Yosemite Sham',        '222 Sham St');
+
+insert into public.Parts values
+(1, 'Bolt',   'red'),
+(2, 'Nut',    'blue'),
+(3, 'Gear',   'red'),
+(4, 'Valve',  'green'),
+(5, 'Spring', 'green');
+
+insert into public.Catalog values
+-- Supplier 1 (Everything Warehouse): all parts, varied prices
+(1, 1, 105.00),
+(1, 2,  57.50),
+(1, 3, 120.00),
+(1, 4, 110.00),
+(1, 5,  72.50),
+
+-- Supplier 2 (Nothing Warehouse): just part 5, which needs to be supplied by every supplier
+(2, 5,  72.50),
+
+-- Supplier 3 (Red Factory): red parts only (but also 5, which needs to be supplied by every supplier)
+(3, 1,  95.00),
+(3, 3, 115.00),
+(3, 5,  72.50),
+
+-- Supplier 4 (Green Machine): green parts only
+(4, 4,  70.00),
+(4, 5,  65.00),
+
+-- Supplier 5 (Yosemite Sham): parts 1, 3, 4, 5 — most expensive is part 3 at 180.00
+(5, 1, 140.00),
+(5, 3, 180.00),
+(5, 4,  80.00),
+(5, 5,  72.50),
+
+-- Supplier 6 (Packer Parts, 221 Packer Street): only green/blue parts (no red)
+-- Qualifies for Q3 via address, not via red part
+(6, 2,  40.00),
+(6, 4,  60.00),
+(6, 5,  55.00),
+
+-- Supplier 7 (Universal Supply Co): all parts at low prices — qualifies for Q5, Q6, Q7, Q8, Q12
+(7, 1, 150.00),
+(7, 2, 100.00),
+(7, 3, 130.00),
+(7, 4,  90.00),
+(7, 5,  80.00),
+
+-- Supplier 8 (Colour Specialist): all red and green parts
+-- Qualifies for Q6 (every red), Q7 (every red+green), Q8 (every red or every green)
+(8, 1, 110.00),
+(8, 3, 105.00),
+(8, 4,  85.00),
+(8, 5,  77.50),
+
+-- Supplier 9 (second Yosemite Sham): pid 1 ties for most expensive across all Shams
+(9, 1, 180.00),
+(9, 2, 120.00),
+(9, 4,  75.00),
+(9, 5,  67.50),
+
+-- Supplier 10 (third Yosemite Sham): not the most expensive part
+(10, 1, 100.00),
+(10, 3, 100.00),
+(10, 4, 100.00),
+(10, 5,  97.50);
